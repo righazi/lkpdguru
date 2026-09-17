@@ -73,11 +73,16 @@
                     </svg>
                 </div>
                 <h2 class="text-xl font-bold text-slate-900">Akses Terbatas</h2>
-                <p class="text-xs text-slate-500 mt-2">Masukkan password untuk membuka LKPD Guru</p>
+                <p class="text-xs text-slate-500 mt-2">Masukkan email dan password untuk membuka LKPD Guru</p>
             </div>
             <form id="loginForm" class="space-y-4">
                 <div>
-                    <input type="password" id="appPassword" placeholder="Masukkan Password" required
+                    <label class="block text-left text-xs font-medium text-slate-700 mb-1 ml-1">Email Pengguna</label>
+                    <input type="email" id="userEmail" placeholder="masukan email anda disini" required
+                        class="w-full text-center px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium transition-all mb-4">
+                    
+                    <label class="block text-left text-xs font-medium text-slate-700 mb-1 ml-1">Password Sistem</label>
+                    <input type="password" id="appPassword" placeholder="Hubungi Developer" required
                         class="w-full text-center px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 text-base font-medium tracking-widest placeholder:tracking-normal placeholder:text-sm transition-all">
                     <p id="loginError" class="text-xs text-red-500 mt-2 text-center hidden font-medium">Password salah. Silakan coba lagi.</p>
                 </div>
@@ -118,11 +123,11 @@
             <button onclick="fillSampleData()" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-300">
                 ✨ Isi Contoh Otomatis
             </button>
-            <!-- Tombol WhatsApp Developer di Header -->
-            <a href="https://wa.me/6281238868558" target="_blank" class="px-3 py-1.5 text-xs font-medium text-white bg-[#25D366] hover:bg-[#128C7E] rounded-lg transition-colors shadow-sm flex items-center space-x-1.5">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.12.548 4.148 1.542 5.962L.416 23.584l5.773-1.516A11.966 11.966 0 0 0 12.031 24c6.646 0 12.031-5.385 12.031-12.031C24.062 5.385 18.677 0 12.031 0zm0 22.016a9.967 9.967 0 0 1-5.07-1.385l-.364-.216-3.774.99 1.01-3.682-.237-.377A9.973 9.973 0 0 1 2.062 12.03c0-5.503 4.482-9.984 9.97-9.984 5.503 0 9.984 4.48 9.984 9.984 0 5.504-4.481 9.985-9.984 9.985zm5.46-7.464c-.3-.15-1.774-.875-2.048-.976-.275-.101-.475-.15-.675.15-.2.3-.775.976-.95 1.176-.175.2-.35.226-.65.076-1.425-.7-2.6-1.775-3.325-3.076-.175-.275.175-.25.45-.8.1-.2.05-.375-.025-.525-.075-.15-.675-1.625-.925-2.225-.25-.575-.5-.5-.675-.5h-.575c-.2 0-.525.075-.8.375-.275.3-1.05 1.025-1.05 2.5s1.075 2.9 1.225 3.1c.15.2 2.125 3.25 5.15 4.5 2.025.825 2.875.7 3.925.65 1.05-.05 3.375-1.375 3.85-2.7.475-1.325.475-2.45.325-2.7-.15-.225-.525-.375-.825-.525z"></path></svg>
-                <span class="hidden sm:inline">Hubungi Developer</span>
-            </a>
+            <!-- Tombol Keluar Aplikasi -->
+            <button onclick="logoutApp()" class="px-3 py-1.5 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors shadow-sm flex items-center space-x-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span class="hidden sm:inline">Keluar</span>
+            </button>
         </div>
     </header>
 
@@ -588,6 +593,49 @@
         </section>
     </main>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, addDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global function agar bisa dipanggil dari script utama
+        window.logUserLogin = async function(email) {
+            try {
+                if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
+                    console.log("Sistem lokal berjalan. Catatan Email:", email);
+                    return; // Skip jika tidak berada di environment production
+                }
+
+                const appId = __app_id;
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                const auth = getAuth(app);
+                
+                // Autentikasi sebelum menulis ke Firestore
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    await signInWithCustomToken(auth, token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                if (auth.currentUser) {
+                    // Menyimpan email ke Firestore (Monitoring Pengguna)
+                    const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'user_logins');
+                    await addDoc(logsRef, {
+                        email: email,
+                        loginTime: new Date().toISOString(),
+                        userId: auth.currentUser.uid
+                    });
+                    console.log("Data login pengguna berhasil dicatat untuk monitoring.");
+                }
+            } catch (error) {
+                console.error("Gagal mencatat data ke database:", error);
+            }
+        };
+    </script>
+
     <!-- JavaScript Application Logic -->
     <script>
         // Cascading dropdown data mapping for Kelas based on Jenjang
@@ -842,20 +890,48 @@
             }, 3000);
         }
 
+        // Action: Keluar dari aplikasi (Logout)
+        function logoutApp() {
+            // Reset form dan tampilan canvas
+            resetForm();
+            
+            // Bersihkan input login
+            document.getElementById('userEmail').value = '';
+            document.getElementById('appPassword').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+            
+            // Tampilkan kembali layar login
+            const overlay = document.getElementById('loginOverlay');
+            overlay.style.display = 'flex';
+            // Sedikit jeda agar transisi CSS berjalan mulus
+            setTimeout(() => {
+                overlay.style.opacity = '1';
+            }, 10);
+            
+            showToast("Anda telah keluar dari aplikasi.");
+        }
+
         // Login Authentication Logic
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const emailInput = document.getElementById('userEmail').value;
             const pwdInput = document.getElementById('appPassword').value;
             const errorMsg = document.getElementById('loginError');
             const overlay = document.getElementById('loginOverlay');
             
             if(pwdInput === "mazarief2026") {
                 errorMsg.classList.add('hidden');
+                
+                // Menjalankan fungsi monitoring background jika terhubung ke database
+                if (typeof window.logUserLogin === 'function') {
+                    window.logUserLogin(emailInput);
+                }
+
                 overlay.style.opacity = '0';
                 // Wait for transition duration then hide completely
                 setTimeout(() => {
                     overlay.style.display = 'none';
-                    showToast("Selamat datang di LKPD Guru!");
+                    showToast("Selamat datang, " + emailInput + "!");
                 }, 300);
             } else {
                 errorMsg.classList.remove('hidden');
