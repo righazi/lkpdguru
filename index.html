@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LKPD Guru - Generator Lembar Kerja Peserta Didik Tematik & Pembelajaran Mendalam</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Print and A4 Layout Styling */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .lkpd-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 15mm !important;
+                width: 100% !important;
+                max-width: none !important;
+                border: none !important;
+            }
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+        }
+        .dot-matrix {
+            border-bottom: 1px dotted #9ca3af;
+            min-height: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-full flex flex-col overflow-hidden">
+
+    <!-- App Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between no-print shadow-sm shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-slate-900 tracking-tight">LKPD Guru</h1>
+                <p class="text-xs text-slate-500">Generator Lembar Kerja Peserta Didik Tematik & Pembelajaran Mendalam</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                Sistem Siap
+            </span>
+            <button onclick="fillSampleData()" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-300">
+                ✨ Isi Contoh Otomatis
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        
+        <!-- PANEL 1: CONFIGURATION FORM (LEFT) -->
+        <section class="w-full lg:w-5/12 xl:w-4/12 bg-white border-r border-slate-200 flex flex-col h-full no-print overflow-y-auto">
+            <div class="p-6 border-b border-slate-100 bg-slate-50 sticky top-0 z-10">
+                <h2 class="text-base font-bold text-slate-800 flex items-center justify-between">
+                    <span>1. Formulir Konfigurasi Guru</span>
+                    <span class="text-xs font-normal text-slate-500 bg-slate-200 px-2 py-0.5 rounded">Parameter LKPD</span>
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">Lengkapi parameter di bawah untuk menghasilkan LKPD yang komprehensif.</p>
+            </div>
+
+            <form id="lkpdForm" class="p-6 space-y-5 flex-1">
+                
+                <!-- Identitas Pembelajaran Group -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-semibold text-brand-700 uppercase tracking-wider">A. Identitas Pembelajaran</h3>
+                    
+                    <!-- Mata Pelajaran -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Nama Mata Pelajaran <span class="text-red-500">*</span></label>
+                        <input type="text" id="mapel" required placeholder="Contoh: Bahasa Indonesia, IPA, Matematika..." 
+                            class="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all placeholder:text-slate-400">
+                    </div>
+
+                    <!-- Jenjang Pendidikan & Kelas Grid -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Jenjang Pendidikan <span class="text-red-500">*</span></label>
+                            <select id="jenjang" required onchange="updateKelasOptions()" class="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+                                <option value="" disabled selected>Pilih Jenjang...</option>
+                                <option value="TK">TK</option>
+                                <option value="SD/MI">SD/MI</option>
+                                <option value="SMP/MTs">SMP/MTs</option>
+                                <option value="SMA/MA">SMA/MA</option>
+                                <option value="SMK">SMK</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Kelas <span class="text-red-500">*</span></label>
+                            <select id="kelas" required onchange="updateFase()" class="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+                                <option value="" disabled selected>Pilih Kelas...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Fase (Readonly/Auto) -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Fase Kurikulum</label>
+                        <input type="text" id="fase" readonly placeholder="Otomatis menyesuaikan jenjang & kelas..." 
+                            class="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 font-medium cursor-not-allowed">
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- Parameter Kurikulum & Model Group -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-semibold text-brand-700 uppercase tracking-wider">B. Parameter Kurikulum & Model</h3>
+                    
+                    <!-- Topik Pembelajaran -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Topik Pembelajaran <span class="text-red-500">*</span></label>
+                        <input type="text" id="topik" required placeholder="Contoh: Memahami Kosakata Serapan & Makna Kata secara Kreatif" 
+                            class="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder:text-slate-400">
+                    </div>
+
+                    <!-- Tujuan Pembelajaran -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Tujuan Pembelajaran (TP) <span class="text-red-500">*</span></label>
+                        <textarea id="tujuan" required rows="3" placeholder="Tuliskan tujuan pembelajaran yang ingin dicapai secara spesifik dan terukur..." 
+                            class="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder:text-slate-400 resize-none"></textarea>
+                    </div>
+
+                    <!-- Dimensi Profil Lulusan (Checkboxes) -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-2">Dimensi Profil Lulusan <span class="text-xs text-slate-400 font-normal">(Pilih minimal 1)</span></label>
+                        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="profil" value="Penalaran Kritis" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>Penalaran Kritis</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="profil" value="Kreativitas" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>Kreativitas</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="profil" value="Kolaborasi / Gotong Royong" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>Kolaborasi</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="profil" value="Kemandirian" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>Kemandirian</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="profil" value="Komunikasi" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>Komunikasi</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="profil" value="Kewargaan" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>Kewargaan</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="profil" value="Keimanan & Ketakwaan" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>Keimanan & Ketakwaan</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" name="profil" value="Kesehatan" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>Kesehatan</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Sintaks Model & Metode Pembelajaran -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Model & Sintaks Pembelajaran <span class="text-red-500">*</span></label>
+                        <select id="model" required class="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+                            <option value="" disabled selected>Pilih Model Pembelajaran...</option>
+                            <option value="Problem-Based Learning (PBL)">Problem-Based Learning (PBL)</option>
+                            <option value="Project-Based Learning (PjBL)">Project-Based Learning (PjBL)</option>
+                            <option value="Discovery Learning">Discovery Learning</option>
+                            <option value="Inquiry Learning">Inquiry Learning</option>
+                            <option value="Model Pembelajaran Kontekstual">Model Pembelajaran Kontekstual</option>
+                        </select>
+                    </div>
+
+                    <!-- Rincian Kegiatan Inti RPP -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Rincian Kegiatan Inti RPP / Modul <span class="text-red-500">*</span></label>
+                        <textarea id="kegiatanInti" required rows="4" placeholder="Tempelkan poin-poin kegiatan inti pembelajaran dari RPP untuk diturunkan menjadi aktivitas spesifik di LKPD..." 
+                            class="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder:text-slate-400 resize-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div class="pt-2 pb-6 flex items-center space-x-3">
+                    <button type="submit" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2 text-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span>⚡ BUAT LKPD LENGKAP</span>
+                    </button>
+                    <button type="reset" onclick="resetForm()" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-sm rounded-xl transition-colors border border-slate-300">
+                        Reset
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- PANEL 2: LIVE CANVAS LKPD & EXPORT TOOLS (RIGHT) -->
+        <section class="flex-1 bg-slate-50 flex flex-col h-full overflow-hidden">
+            
+            <!-- Toolbar Atas Canvas -->
+            <div class="bg-white border-b border-slate-200 px-6 py-3 flex flex-wrap items-center justify-between gap-4 no-print shadow-sm shrink-0">
+                <div class="flex items-center space-x-3">
+                    <span id="statusBadge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                        <span class="w-2 h-2 mr-1.5 bg-amber-500 rounded-full"></span>
+                        <span id="statusText">Menunggu Konfigurasi Guru</span>
+                    </span>
+                    <span class="text-xs text-slate-400 hidden sm:inline">| Format A4 Profesional Siap Cetak</span>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="copyToClipboard()" id="btnCopy" disabled class="px-3.5 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 rounded-lg border border-slate-300 transition-all shadow-sm flex items-center space-x-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                        <span>Salin Teks</span>
+                    </button>
+                    <button onclick="downloadWord()" id="btnWord" disabled class="px-3.5 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all shadow-sm flex items-center space-x-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span>Download Word</span>
+                    </button>
+                    <button onclick="printPDF()" id="btnPrint" disabled class="px-3.5 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all shadow-sm flex items-center space-x-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        <span>Cetak PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Canvas Scrollable Area -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center items-start">
+                
+                <!-- A4 Document Container -->
+                <div id="lkpdCanvas" class="lkpd-page bg-white w-full max-w-[210mm] min-h-[297mm] p-8 sm:p-12 shadow-xl rounded-lg border border-slate-200 text-slate-800 relative transition-all">
+                    
+                    <!-- Empty State Placeholder -->
+                    <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-white/95 z-20">
+                        <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800 mb-1">Belum Ada LKPD yang Dibuat</h3>
+                        <p class="text-xs text-slate-500 max-w-sm mb-4">Silakan isi formulir konfigurasi di sebelah kiri, lalu klik tombol <strong class="text-brand-700">"⚡ BUAT LKPD LENGKAP"</strong> untuk menghasilkan lembar kerja interaktif.</p>
+                        <button onclick="fillSampleData()" class="px-4 py-2 bg-brand-600 text-white rounded-lg text-xs font-medium shadow hover:bg-brand-700 transition-colors">
+                            Gunakan Data Sampel Contoh
+                        </button>
+                    </div>
+
+                    <!-- LKPD Document Content (Populated dynamically) -->
+                    <div id="lkpdContent" class="space-y-6 opacity-40 select-none pointer-events-none">
+                        
+                        <!-- I. HEADER & IDENTITAS PESERTA DIDIK -->
+                        <div class="text-center border-b-2 border-slate-800 pb-4">
+                            <h2 class="text-lg sm:text-xl font-extrabold uppercase tracking-wider text-slate-900">LEMBAR KERJA PESERTA DIDIK (LKPD)</h2>
+                            <p id="previewSubTitle" class="text-xs sm:text-sm font-medium text-slate-600 mt-1">Mata Pelajaran: [Mata Pelajaran] — Topik: [Topik Pembelajaran]</p>
+                            <div class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-500 mt-2">
+                                <span id="previewJenjangKelas">Jenjang / Kelas: -</span>
+                                <span>•</span>
+                                <span id="previewFase">Fase: -</span>
+                                <span>•</span>
+                                <span id="previewModel">Model: -</span>
+                            </div>
+                        </div>
+
+                        <!-- Profil Lulusan & Tujuan -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-1.5">
+                            <div class="flex flex-wrap gap-1 items-center">
+                                <strong class="text-slate-700">Dimensi Profil:</strong>
+                                <span id="previewProfil" class="text-slate-600 italic">Belum dipilih</span>
+                            </div>
+                            <div>
+                                <strong class="text-slate-700">Tujuan Pembelajaran:</strong>
+                                <p id="previewTujuan" class="text-slate-600 italic mt-0.5">Tujuan pembelajaran akan tampil di sini...</p>
+                            </div>
+                        </div>
+
+                        <!-- Kotak Identitas Siswa -->
+                        <div class="border border-slate-300 rounded-lg p-3.5 bg-white text-xs grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between border-b border-dashed border-slate-200 pb-1">
+                                    <span class="font-medium text-slate-700">Nama Peserta Didik</span>
+                                    <span class="text-slate-400">: ........................................................</span>
+                                </div>
+                                <div class="flex items-center justify-between border-b border-dashed border-slate-200 pb-1">
+                                    <span class="font-medium text-slate-700">Nomor Absen / Kelompok</span>
+                                    <span class="text-slate-400">: ........................................................</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between border-b border-dashed border-slate-200 pb-1">
+                                    <span class="font-medium text-slate-700">Kelas / Fase</span>
+                                    <span class="text-slate-400">: ........................................................</span>
+                                </div>
+                                <div class="flex items-center justify-between border-b border-dashed border-slate-200 pb-1">
+                                    <span class="font-medium text-slate-700">Tanggal Pengerjaan</span>
+                                    <span class="text-slate-400">: ........................................................</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- II. PETUNJUK PENGGUNAAN LKPD -->
+                        <div class="space-y-2">
+                            <h3 class="text-sm font-bold text-slate-900 border-l-4 border-brand-600 pl-2 uppercase tracking-wide">II. Petunjuk Penggunaan LKPD</h3>
+                            <div class="bg-brand-50/50 border border-brand-100 rounded-lg p-3.5 text-xs text-slate-700 space-y-2">
+                                <p class="font-medium text-brand-900">Halo Peserta Didik Hebat! Selamat mengikuti petualangan belajar hari ini dengan penuh semangat dan rasa ingin tahu yang tinggi.</p>
+                                <div>
+                                    <strong class="text-brand-800">Alat dan Bahan yang Dibutuhkan:</strong>
+                                    <ul class="list-disc list-inside mt-1 space-y-0.5 text-slate-600">
+                                        <li>Alat tulis lengkap (pulpen, pensil warna/spidol)</li>
+                                        <li>Buku sumber belajar atau gawai referensi (jika diperlukan)</li>
+                                        <li>Lembar kerja dan media pendukung diskusi kelompok</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <strong class="text-brand-800">Instruksi Kerja:</strong>
+                                    <ol class="list-decimal list-inside mt-1 space-y-0.5 text-slate-600">
+                                        <li>Berdoalah sebelum memulai kegiatan belajar.</li>
+                                        <li>Baca dan pahami setiap petunjuk pada setiap tahapan kegiatan dengan teliti.</li>
+                                        <li>Diskusikan bersama anggota kelompok secara aktif, santun, dan demokratis.</li>
+                                        <li>Kerjakan setiap tugas dengan jujur, mandiri, dan penuh tanggung jawab.</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- III. SINTAKS PEMBELAJARAN & PENGALAMAN BELAJAR MENDALAM (BLOK NARATIF) -->
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-bold text-slate-900 border-l-4 border-brand-600 pl-2 uppercase tracking-wide">III. Alur Pembelajaran & Pengalaman Mendalam</h3>
+
+                            <!-- Tahap 1: Memahami -->
+                            <div class="border border-slate-200 rounded-lg p-4 space-y-3 bg-white">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-brand-700 uppercase">1. Tahap Sintaks Awal — Pengalaman Belajar: MEMAHAMI</h4>
+                                    <span class="text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Mindful & Meaningful</span>
+                                </div>
+                                <p class="text-xs text-slate-600 leading-relaxed">
+                                    Perhatikan paparan wacana atau studi fenomena berikut dengan cermat untuk memahami konsep awal materi pembelajaran.
+                                </p>
+                                <div class="p-3 bg-slate-50 border border-dashed border-slate-300 rounded text-center text-xs text-slate-500">
+                                    [GAMBAR / BAGAN PENGAMATAN: Ilustrasi Kontekstual Topik Pembelajaran]
+                                </div>
+                                <div class="space-y-2 pt-2">
+                                    <p class="text-xs font-semibold text-slate-700">Pertanyaan Pemahaman Konsep:</p>
+                                    <div class="space-y-3 text-xs text-slate-600">
+                                        <div>
+                                            <p>a. Berdasarkan pengamatan Anda di atas, jelaskan makna inti atau fenomena utama yang ditemukan?</p>
+                                            <div class="dot-matrix mt-2"></div>
+                                            <div class="dot-matrix mt-2"></div>
+                                        </div>
+                                        <div>
+                                            <p>b. Apa kaitan antara konsep materi ini dengan pengalaman nyata dalam kehidupan sehari-hari?</p>
+                                            <div class="dot-matrix mt-2"></div>
+                                            <div class="dot-matrix mt-2"></div>
+                                        </div>
+                                        <div>
+                                            <p>c. Tuliskan satu pertanyaan kritis atau hal baru yang ingin Anda eksplorasi lebih mendalam!</p>
+                                            <div class="dot-matrix mt-2"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tahap 2: Pengorganisasian Kelompok -->
+                            <div class="border border-slate-200 rounded-lg p-4 space-y-3 bg-white">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-brand-700 uppercase">2. Pengorganisasian Peran Kolaborasi Kelompok</h4>
+                                    <span class="text-[10px] font-semibold bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Gotong Royong</span>
+                                </div>
+                                <p class="text-xs text-slate-600">Bagi tugas secara adil dengan anggota kelompok Anda:</p>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div class="p-2 bg-slate-50 rounded border border-slate-200"><strong>Ketua Kelompok:</strong> ....................................</div>
+                                    <div class="p-2 bg-slate-50 rounded border border-slate-200"><strong>Notulis / Pencatat:</strong> ....................................</div>
+                                    <div class="p-2 bg-slate-50 rounded border border-slate-200"><strong>Pencari Informasi:</strong> ....................................</div>
+                                    <div class="p-2 bg-slate-50 rounded border border-slate-200"><strong>Juru Bicara / Presenter:</strong> ....................................</div>
+                                </div>
+                            </div>
+
+                            <!-- Tahap 3: Mengaplikasikan -->
+                            <div class="border border-slate-200 rounded-lg p-4 space-y-3 bg-white">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-brand-700 uppercase">3. Tahap Sintaks Inti — Pengalaman Belajar: MENGAPLIKASIKAN</h4>
+                                    <span class="text-[10px] font-semibold bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Joyful & Practical</span>
+                                </div>
+                                <div class="bg-amber-50/60 border border-amber-200 rounded p-3 text-xs text-slate-700 space-y-1">
+                                    <strong class="text-amber-900 block font-semibold">Studi Kasus & Tugas Nyata:</strong>
+                                    <p id="previewKegiatanIntiText" class="text-slate-600 leading-relaxed italic">Rincian kegiatan inti dari guru akan diintegrasikan secara kontekstual di sini...</p>
+                                </div>
+                                <div class="space-y-2 pt-1">
+                                    <p class="text-xs font-semibold text-slate-700">Instruksi Kerja Spesifik:</p>
+                                    <ol class="list-decimal list-inside text-xs text-slate-600 space-y-1">
+                                        <li>Analisis permasalahan studi kasus di atas bersama kelompok Anda.</li>
+                                        <li>Rancang solusi kreatif, langkah pemecahan masalah, atau draf karya nyata.</li>
+                                        <li>Tuliskan hasil analisis dan penyelesaian masalah pada ruang jawaban di bawah ini.</li>
+                                    </ol>
+                                    <div class="mt-3 space-y-2">
+                                        <div class="text-xs font-medium text-slate-700">Ruang Jawaban Aplikasi / Solusi Karya :</div>
+                                        <div class="dot-matrix mt-2"></div>
+                                        <div class="dot-matrix mt-2"></div>
+                                        <div class="dot-matrix mt-2"></div>
+                                        <div class="dot-matrix mt-2"></div>
+                                        <div class="dot-matrix mt-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tahap 4: Merefleksikan -->
+                            <div class="border border-slate-200 rounded-lg p-4 space-y-3 bg-white">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-brand-700 uppercase">4. Tahap Sintaks Akhir — Pengalaman Belajar: MEREFLEKSIKAN</h4>
+                                    <span class="text-[10px] font-semibold bg-teal-100 text-teal-800 px-2 py-0.5 rounded">Mindful Learning</span>
+                                </div>
+                                <p class="text-xs text-slate-600">Tinjau kembali proses dan pengalaman belajar yang telah Anda lalui:</p>
+                                <div class="space-y-3 text-xs text-slate-600">
+                                    <div>
+                                        <p>a. Bagian kegiatan manakah yang paling berkesan dan menantang bagi Anda hari ini? Mengapa?</p>
+                                        <div class="dot-matrix mt-2"></div>
+                                    </div>
+                                    <div>
+                                        <p>b. Kendala atau tantangan apa yang Anda hadapi selama berdiskusi, dan bagaimana cara mengatasinya?</p>
+                                        <div class="dot-matrix mt-2"></div>
+                                    </div>
+                                    <div>
+                                        <p>c. Rencana tindak lanjut apa yang akan Anda lakukan untuk memperdalam penguasaan materi ini?</p>
+                                        <div class="dot-matrix mt-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- IV. BAGIAN PENUTUP -->
+                        <div class="space-y-4 pt-2">
+                            <h3 class="text-sm font-bold text-slate-900 border-l-4 border-brand-600 pl-2 uppercase tracking-wide">IV. Penutup & Penilaian Mandiri</h3>
+
+                            <!-- 1. Refleksi Pemahaman Diri (Checklist Mandiri) -->
+                            <div class="space-y-2">
+                                <p class="text-xs font-semibold text-slate-700">1. Checklist Pemahaman Diri (Beri tanda centang sesuai pemahaman Anda):</p>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs border border-slate-200 rounded-lg overflow-hidden">
+                                        <thead class="bg-slate-100 text-slate-700">
+                                            <tr>
+                                                <th class="p-2 border-b border-slate-200 w-1/2">Indikator Capaian Belajar</th>
+                                                <th class="p-2 border-b border-slate-200 text-center">Sangat Paham</th>
+                                                <th class="p-2 border-b border-slate-200 text-center">Paham</th>
+                                                <th class="p-2 border-b border-slate-200 text-center">Cukup Paham</th>
+                                                <th class="p-2 border-b border-slate-200 text-center">Butuh Bantuan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-200 text-slate-600">
+                                            <tr>
+                                                <td class="p-2">Memahami konsep dasar dan terminologi materi pembelajaran.</td>
+                                                <td class="p-2 text-center">☐</td>
+                                                <td class="p-2 text-center">☐</td>
+                                                <td class="p-2 text-center">☐</td>
+                                                <td class="p-2 text-center">☐</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="p-2">Mampu menganalisis studi kasus dan mengaitkannya dengan konteks nyata.</td>
+                                                <td class="p-2 text-center">☐</td>
+                                                <td class="p-2 text-center">☐</td>
+                                                <td class="p-2 text-center">☐</td>
+                                                <td class="p-2 text-center">☐</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="p-2">Aktif berkolaborasi dan berkontribusi secara positif dalam kelompok.</td>
+                                                <td class="p-2 text-center">☐</td>
+                                                <td class="p-2 text-center">☐</td>
+                                                <td class="p-2 text-center">☐</td>
+                                                <td class="p-2 text-center">☐</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 2. Catatan Guru & Paraf -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                <div class="border border-slate-200 rounded-lg p-3 text-xs">
+                                    <span class="font-semibold text-slate-700 block mb-1">Catatan dan Umpan Balik Guru:</span>
+                                    <div class="dot-matrix mt-4"></div>
+                                    <div class="dot-matrix mt-4"></div>
+                                </div>
+                                <div class="border border-slate-200 rounded-lg p-3 text-xs flex flex-col justify-between">
+                                    <span class="font-semibold text-slate-700 block">Paraf & Penilaian Guru:</span>
+                                    <div class="flex justify-between items-end mt-6">
+                                        <div>
+                                            <p class="text-slate-400">Nilai / Skor:</p>
+                                            <p class="font-bold text-slate-800 text-sm mt-1">.......................</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-slate-400">Paraf Guru:</p>
+                                            <div class="h-10 w-24 border-b border-dashed border-slate-400 mt-1"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Kata Motivasi Hari Ini -->
+                            <div class="bg-brand-50 border border-brand-200 rounded-lg p-3 text-center text-xs">
+                                <p class="font-bold text-brand-800 uppercase tracking-wide">💡 Kata Motivasi Hari Ini</p>
+                                <p class="text-brand-700 italic mt-1">"Pendidikan bukan sekadar mengisi wadah kosong, tetapi menyalakan api rasa ingin tahu untuk terus belajar sepanjang hayat."</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Cascading dropdown data mapping for Kelas based on Jenjang
+        const kelasOptionsMap = {
+            "TK": ["TK A", "TK B"],
+            "SD/MI": ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"],
+            "SMP/MTs": ["Kelas 7", "Kelas 8", "Kelas 9"],
+            "SMA/MA": ["Kelas 10", "Kelas 11", "Kelas 12"],
+            "SMK": ["Kelas 10", "Kelas 11", "Kelas 12"]
+        };
+
+        // Automatic Fase mapping based on Jenjang and Kelas selection
+        function updateKelasOptions() {
+            const jenjangSelect = document.getElementById('jenjang');
+            const kelasSelect = document.getElementById('kelas');
+            const selectedJenjang = jenjangSelect.value;
+
+            // Reset kelas dropdown
+            kelasSelect.innerHTML = '<option value="" disabled selected>Pilih Kelas...</option>';
+            
+            if (kelasOptionsMap[selectedJenjang]) {
+                kelasOptionsMap[selectedJenjang].forEach(kelas => {
+                    const option = document.createElement('option');
+                    option.value = kelas;
+                    option.textContent = kelas;
+                    kelasSelect.appendChild(option);
+                });
+            }
+            updateFase();
+        }
+
+        function updateFase() {
+            const jenjang = document.getElementById('jenjang').value;
+            const kelas = document.getElementById('kelas').value;
+            const faseInput = document.getElementById('fase');
+
+            if (!jenjang || !kelas) {
+                faseInput.value = "";
+                return;
+            }
+
+            let fase = "";
+            if (jenjang === "TK") {
+                fase = "Fase Fondasi";
+            } else if (jenjang === "SD/MI") {
+                if (kelas === "Kelas 1" || kelas === "Kelas 2") fase = "Fase A";
+                else if (kelas === "Kelas 3" || kelas === "Kelas 4") fase = "Fase B";
+                else if (kelas === "Kelas 5" || kelas === "Kelas 6") fase = "Fase C";
+            } else if (jenjang === "SMP/MTs") {
+                fase = "Fase D";
+            } else if (jenjang === "SMA/MA" || jenjang === "SMK") {
+                if (kelas === "Kelas 10") fase = "Fase E";
+                else fase = "Fase F";
+            }
+            faseInput.value = fase;
+        }
+
+        // Fill Sample Data for quick demonstration
+        function fillSampleData() {
+            document.getElementById('mapel').value = "Bahasa Indonesia";
+            document.getElementById('jenjang').value = "SMP/MTs";
+            updateKelasOptions();
+            document.getElementById('kelas').value = "Kelas 7";
+            updateFase();
+            document.getElementById('topik').value = "Menulis Teks Deskripsi Objek Wisata Lokal secara Kreatif";
+            document.getElementById('tujuan').value = "Peserta didik mampu mengidentifikasi ciri objek, menyusun kerangka, dan menulis teks deskripsi yang memuat panca indra dengan runtut dan kreatif.";
+            
+            // Check some profiling checkboxes
+            document.querySelectorAll('input[name="profil"]').forEach(cb => {
+                if (cb.value === "Penalaran Kritis" || cb.value === "Kreativitas" || cb.value === "Komunikasi") {
+                    cb.checked = true;
+                } else {
+                    cb.checked = false;
+                }
+            });
+
+            document.getElementById('model').value = "Project-Based Learning (PjBL)";
+            document.getElementById('kegiatanInti').value = "1. Siswa mengamati video keindahan wisata lokal.\n2. Siswa membentuk kelompok untuk merancang draf deskripsi.\n3. Siswa melakukan observasi atau wawancara singkat.\n4. Siswa menyusun produk laporan teks deskripsi kreatif.";
+
+            // Trigger generation
+            document.getElementById('lkpdForm').dispatchEvent(new Event('submit'));
+        }
+
+        // Handle Form Submission & Generate LKPD View
+        document.getElementById('lkpdForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const mapel = document.getElementById('mapel').value;
+            const jenjang = document.getElementById('jenjang').value;
+            const kelas = document.getElementById('kelas').value;
+            const fase = document.getElementById('fase').value;
+            const topik = document.getElementById('topik').value;
+            const tujuan = document.getElementById('tujuan').value;
+            const model = document.getElementById('model').value;
+            const kegiatanInti = document.getElementById('kegiatanInti').value;
+
+            // Collect checked profiles
+            const selectedProfil = [];
+            document.querySelectorAll('input[name="profil"]:checked').forEach(cb => {
+                selectedProfil.push(cb.value);
+            });
+
+            if (selectedProfil.length === 0) {
+                alertCustom("Mohon pilih setidaknya satu Dimensi Profil Lulusan.");
+                return;
+            }
+
+            // Update Preview Elements
+            document.getElementById('previewSubTitle').textContent = `Mata Pelajaran: ${mapel} — Topik: ${topik}`;
+            document.getElementById('previewJenjangKelas').textContent = `Jenjang / Kelas: ${jenjang} (${kelas})`;
+            document.getElementById('previewFase').textContent = `Fase: ${fase}`;
+            document.getElementById('previewModel').textContent = `Model: ${model}`;
+            document.getElementById('previewProfil').textContent = selectedProfil.join(', ');
+            document.getElementById('previewTujuan').textContent = tujuan;
+            document.getElementById('previewKegiatanIntiText').textContent = kegiatanInti;
+
+            // Activate Preview styling & enable export buttons
+            const lkpdContent = document.getElementById('lkpdContent');
+            lkpdContent.classList.remove('opacity-40', 'select-none', 'pointer-events-none');
+            
+            document.getElementById('emptyState').style.display = 'none';
+
+            // Enable export buttons
+            document.getElementById('btnCopy').disabled = false;
+            document.getElementById('btnWord').disabled = false;
+            document.getElementById('btnPrint').disabled = false;
+
+            // Update status badge
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200";
+            statusBadge.innerHTML = `<span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>● LKPD Berhasil Dibuat`;
+
+            // Scroll preview to top smoothly
+            document.getElementById('lkpdCanvas').parentElement.scrollTop = 0;
+        });
+
+        // Reset Form handler
+        function resetForm() {
+            document.getElementById('lkpdForm').reset();
+            document.getElementById('kelas').innerHTML = '<option value="" disabled selected>Pilih Kelas...</option>';
+            
+            const lkpdContent = document.getElementById('lkpdContent');
+            lkpdContent.classList.add('opacity-40', 'select-none', 'pointer-events-none');
+            document.getElementById('emptyState').style.display = 'flex';
+
+            document.getElementById('btnCopy').disabled = true;
+            document.getElementById('btnWord').disabled = true;
+            document.getElementById('btnPrint').disabled = true;
+
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200";
+            statusBadge.innerHTML = `<span class="w-2 h-2 mr-1.5 bg-amber-500 rounded-full"></span>Menunggu Konfigurasi Guru`;
+        }
+
+        // Custom Modal Notification (No alert() usage)
+        function alertCustom(message) {
+            const modal = document.createElement('div');
+            modal.className = "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in";
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-lg font-bold">⚠️</div>
+                    <h3 class="font-bold text-slate-800">Perhatian</h3>
+                    <p class="text-xs text-slate-600">${message}</p>
+                    <button onclick="this.closest('.fixed').remove()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-colors">
+                        Mengerti
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Action: Copy Text to Clipboard
+        function copyToClipboard() {
+            const content = document.getElementById('lkpdContent').innerText;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(content).then(() => {
+                    showToast("Teks LKPD berhasil disalin ke clipboard!");
+                }).catch(() => {
+                    fallbackCopyText(content);
+                });
+            } else {
+                fallbackCopyText(content);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast("Teks LKPD berhasil disalin ke clipboard!");
+            } catch (err) {
+                alertCustom("Gagal menyalin teks.");
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Action: Download Word (.doc HTML Blob) preserving all tables and formatting exactly as preview
+        function downloadWord() {
+            const previewHTML = document.getElementById('lkpdContent').innerHTML;
+            const htmlContent = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/1999/xlink">
+                <head>
+                    <meta charset="utf-8">
+                    <title>LKPD Guru Profesional</title>
+                    <style>
+                        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.5; color: #1e293b; padding: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 11pt; text-align: left; }
+                        th { background-color: #f1f5f9; color: #334155; font-weight: bold; }
+                        .dot-matrix { border-bottom: 1px dotted #9ca3af; min-height: 25px; margin-top: 8px; margin-bottom: 8px; }
+                    </style>
+                </head>
+                <body>
+                    ${previewHTML}
+                </body>
+                </html>
+            `;
+            const blob = new Blob(['\ufeff' + htmlContent], {
+                type: 'application/msword'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `LKPD_${document.getElementById('mapel').value || 'Pembelajaran'}_${document.getElementById('topik').value || 'Tematik'}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("File Word (.doc) lengkap beserta tabel berhasil diunduh!");
+        }
+
+        // Action: Print PDF
+        function printPDF() {
+            window.print();
+        }
+
+        // Toast Notification helper
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-2xl z-50 flex items-center space-x-2 animate-fade-in";
+            toast.innerHTML = `<span>✅</span><span>${message}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
